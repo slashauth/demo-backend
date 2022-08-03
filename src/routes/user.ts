@@ -81,34 +81,3 @@ export const getUsers: Handler = async (request, response) => {
     return response.sendStatus(400);
   }
 };
-
-export const mintNFT: Handler = async (request, response) => {
-  try {
-    // Make sure the user is authed
-    if (request.isAuthed && request.clientID && request.walletAddress) {
-      const clientID = request.clientID;
-      const address = request.walletAddress;
-      const { roleLevel } = request.body;
-
-      if (
-        typeof clientID === 'string' &&
-        !isEmpty(clientID) &&
-        typeof roleLevel === 'string' &&
-        !isEmpty(roleLevel) &&
-        typeof address === 'string' &&
-        !isEmpty(address)
-      ) {
-        const resp = await controllers.eth.mintToken(
-          clientID,
-          roleLevel,
-          address
-        );
-        return response.status(200).json(resp);
-      }
-    }
-    return response.sendStatus(403);
-  } catch (err) {
-    console.error(err);
-    return response.sendStatus(400);
-  }
-};

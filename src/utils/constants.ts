@@ -11,10 +11,3 @@ export const ENV = {
   DEMO: 'demo',
   LOCAL: 'local',
 };
-
-export enum ChainId {
-  Ethereum = 1,
-  Rinkeby = 4,
-  Polygon = 137,
-  Mumbai = 80001,
-}

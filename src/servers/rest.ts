@@ -3,7 +3,7 @@ import { parseAuthToken } from '../middleware/auth';
 import { getAppMetadata } from '../routes/app';
 import { addEvent, getEvents } from '../routes/event';
 import { healthCheck } from '../routes/health_check';
-import { getMe, getUsers, mintNFT, patchMe } from '../routes/user';
+import { getMe, getUsers, patchMe } from '../routes/user';
 import { wrapAsync } from '../utils/routes';
 
 export default (app: express.Application) => {
@@ -24,6 +24,4 @@ export default (app: express.Application) => {
   app.patch('/me', wrapAsync(patchMe));
 
   app.post('/event', wrapAsync(addEvent));
-
-  app.post('/tokens', wrapAsync(mintNFT));
 };
