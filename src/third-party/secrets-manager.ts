@@ -3,7 +3,6 @@ import {
   GetSecretValueCommandInput,
   SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
-import * as Sentry from '@sentry/node';
 import { Secrets } from '../@types/aws';
 import { AWSConfig } from '../@types/config';
 
@@ -33,7 +32,6 @@ export const getAWSSecrets = async (conf: AWSConfig): Promise<Secrets> => {
 
     return JSON.parse(secretString) as Secrets;
   } catch (err) {
-    Sentry.captureException(err);
     console.error(err);
     throw err;
   }
