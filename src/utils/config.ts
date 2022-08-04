@@ -31,7 +31,7 @@ const readProdConfig = (): Config => {
     clientID: 'clientID',
     aws: {
       region: 'us-west-2',
-      secretsID: `/demo/slashauth/secrets`,
+      secretsID: ``,
     },
     sentry: getSentryConfig(),
   });
@@ -66,11 +66,9 @@ const GetConfig = (): Config => {
   switch (env) {
     case ENV.DEMO:
       return readProdConfig();
-      break;
     case ENV.LOCAL:
     default:
       return readLocalConfig();
-      break;
   }
 };
 
