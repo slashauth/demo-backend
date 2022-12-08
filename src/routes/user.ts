@@ -5,17 +5,17 @@ import { isEmpty } from '../utils/strings';
 export const getMe: Handler = async (request, response) => {
   try {
     // Make sure the user is authed
-    if (request.isAuthed && request.clientID && request.walletAddress) {
-      const clientID = request.clientID;
-      const address = request.walletAddress;
+    if (request.slashauth.isAuthed) {
+      const { clientID, userID } = request.slashauth;
 
       if (
         typeof clientID === 'string' &&
         !isEmpty(clientID) &&
-        typeof address === 'string' &&
-        !isEmpty(address)
+        typeof userID === 'string' &&
+        !isEmpty(userID)
       ) {
-        const user = await controllers.user.getMe(clientID, address);
+        const user = await controllers.user.getMe(clientID, userID);
+
         return response.status(200).json(user);
       }
     }
@@ -27,25 +27,20 @@ export const getMe: Handler = async (request, response) => {
 
 export const patchMe: Handler = async (request, response) => {
   try {
-    if (request.isAuthed && request.clientID && request.walletAddress) {
-      const clientID = request.clientID;
-      const address = request.walletAddress;
+    if (request.slashauth.isAuthed) {
+      const { clientID, userID } = request.slashauth;
 
       const { nickname } = request.body;
 
       if (
         typeof clientID === 'string' &&
         !isEmpty(clientID) &&
-        typeof address === 'string' &&
-        !isEmpty(address) &&
+        typeof userID === 'string' &&
+        !isEmpty(userID) &&
         typeof nickname === 'string' &&
         !isEmpty(nickname)
       ) {
-        const user = await controllers.user.patchMe(
-          clientID,
-          address,
-          nickname
-        );
+        const user = await controllers.user.patchMe(clientID, userID, nickname);
         return response.status(200).json(user);
       }
     }
@@ -58,15 +53,13 @@ export const patchMe: Handler = async (request, response) => {
 export const getUsers: Handler = async (request, response) => {
   try {
     // Make sure the user is authed
-    if (request.isAuthed && request.clientID && request.walletAddress) {
-      const clientID = request.clientID;
-      const address = request.walletAddress;
+    if (request.slashauth.isAuthed) {
+      const clientID = request.slashauth.clientID;
       const cursor = request.query.cursor;
 
       if (typeof clientID === 'string' && !isEmpty(clientID)) {
         const users = await controllers.user.getUsers(
           clientID,
-          address,
           cursor as string
         );
 

@@ -14,7 +14,7 @@ export class AppController {
    */
   getAppMetadataController = async (clientID: string): Promise<AppRecord> => {
     try {
-      const appResp = await slashauthClient.getApp();
+      const appResp = await slashauthClient.app.getInfo();
 
       if (!appResp.result || !appResp.result.data) {
         throw new Error(

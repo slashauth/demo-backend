@@ -1,5 +1,4 @@
 import { slashauthClient } from '../third-party/slashauth_client';
-import { CONSTANTS } from '../utils/constants';
 
 type User = {
   clientID: string;
@@ -14,16 +13,18 @@ export class UserController {
   /**
    * getMe gets the current user's data
    * @param clientID
-   * @param address
+   * @param userID
    * @returns
    */
-  getMe = async (clientID: string, address: string): Promise<User> => {
+  getMe = async (clientID: string, userID: string): Promise<User> => {
     try {
-      const userResp = await slashauthClient.getUserByID({ userID: address });
+      const userResp = await slashauthClient.user.getUserByID({
+        userID,
+      });
 
       if (!userResp.result || !userResp.result.data) {
         throw new Error(
-          `getUserByID did not return a result for clientID ${clientID} and address ${address}`
+          `getUserByID did not return a result for clientID ${clientID} and user ${userID}`
         );
       }
 
@@ -44,24 +45,24 @@ export class UserController {
   /**
    * patchMe allows the current user to update their data
    * @param clientID
-   * @param address
+   * @param userID
    * @param nickname
    * @returns
    */
   patchMe = async (
     clientID: string,
-    address: string,
+    userID: string,
     nickname: string
   ): Promise<User> => {
     try {
-      const updateResp = await slashauthClient.updateUserMetadata({
-        userID: address,
+      const updateResp = await slashauthClient.user.updateUserMetadata({
+        userID,
         nickname,
       });
 
       if (!updateResp.result || !updateResp.result.data) {
         throw new Error(
-          `updateUserMetadata did not return a result for clientID ${clientID} and address ${address}`
+          `updateUserMetadata did not return a result for clientID ${clientID} and user ${userID}`
         );
       }
 
@@ -86,51 +87,36 @@ export class UserController {
    * @param cursor
    * @returns
    */
-  getUsers = async (
-    clientID: string,
-    address: string,
-    cursor?: string
-  ): Promise<User[]> => {
+  getUsers = async (clientID: string, cursor?: string): Promise<User[]> => {
     try {
-      if (
-        (
-          await slashauthClient.hasRole({
-            address,
-            role: CONSTANTS.ADMIN_ROLE_LEVEL,
-          })
-        ).result?.hasRole
-      ) {
-        let hasMore = true;
-        const users: User[] = [];
+      let hasMore = true;
+      const users: User[] = [];
 
-        while (hasMore) {
-          const usersResp = await slashauthClient.getUsers({ cursor });
+      while (hasMore) {
+        const usersResp = await slashauthClient.user.getUsers({ cursor });
 
-          if (!usersResp.result || !usersResp.result.data) {
-            throw new Error(
-              `getUsers did not return a result for clientID ${clientID}`
-            );
-          }
-
-          usersResp.result.data.forEach((elem) => {
-            users.push({
-              clientID: elem.clientID,
-              address: elem.wallet,
-              nickname: elem.nickname,
-              roles: elem.roles,
-              metadata: elem.metadata,
-              dateTime: elem.createdAt,
-            });
-          });
-
-          hasMore = usersResp.result.hasMore;
-          cursor = usersResp.result.cursor;
+        if (!usersResp.result || !usersResp.result.data) {
+          throw new Error(
+            `getUsers did not return a result for clientID ${clientID}`
+          );
         }
 
-        return users;
-      } else {
-        throw new Error('unauthenticated');
+        usersResp.result.data.forEach((elem) => {
+          users.push({
+            clientID: elem.clientID,
+            address: elem.wallet,
+            nickname: elem.nickname,
+            roles: elem.roles,
+            metadata: elem.metadata,
+            dateTime: elem.createdAt,
+          });
+        });
+
+        hasMore = usersResp.result.hasMore;
+        cursor = usersResp.result.cursor;
       }
+
+      return users;
     } catch (err) {
       console.error(err);
       throw err;

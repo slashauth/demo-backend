@@ -5,15 +5,11 @@ import { isEmpty } from '../utils/strings';
 export const getEvents: Handler = async (request, response) => {
   try {
     // Make sure the user is authed
-    if (request.isAuthed && request.clientID && request.walletAddress) {
-      const clientID = request.clientID;
-      const address = request.walletAddress;
+    if (request.slashauth.isAuthed) {
+      const clientID = request.slashauth.clientID;
 
       if (typeof clientID === 'string' && !isEmpty(clientID)) {
-        const events = await controllers.event.getEventsController(
-          clientID,
-          address
-        );
+        const events = await controllers.event.getEventsController(clientID);
 
         return response.status(200).json(events);
       }
@@ -31,9 +27,8 @@ export const getEvents: Handler = async (request, response) => {
 export const addEvent: Handler = async (request, response) => {
   try {
     // Make sure the user is authed
-    if (request.isAuthed && request.clientID && request.walletAddress) {
-      const clientID = request.clientID;
-      const address = request.walletAddress;
+    if (request.slashauth.isAuthed) {
+      const clientID = request.slashauth.clientID;
 
       const { name, description, link, dateTime } = request.body;
 
@@ -45,16 +40,12 @@ export const addEvent: Handler = async (request, response) => {
         typeof dateTime === 'string' &&
         !isEmpty(dateTime)
       ) {
-        const event = await controllers.event.putEventController(
-          clientID,
-          address,
-          {
-            name,
-            dateTime,
-            description,
-            link,
-          }
-        );
+        const event = await controllers.event.putEventController(clientID, {
+          name,
+          dateTime,
+          description,
+          link,
+        });
 
         return response.status(200).json(event);
       }
