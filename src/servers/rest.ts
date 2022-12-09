@@ -48,7 +48,7 @@ export default (app: express.Application) => {
   app.patch('/me', wrapAsync(patchMe));
 
   app.post(
-    '/event',
+    '/events',
     middleware.hasRole(CONSTANTS.ADMIN_ROLE_LEVEL),
     wrapAsync(addEvent)
   );
