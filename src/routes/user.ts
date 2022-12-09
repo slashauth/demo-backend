@@ -5,20 +5,23 @@ import { isEmpty } from '../utils/strings';
 export const getMe: Handler = async (request, response) => {
   try {
     // Make sure the user is authed
-    if (request.isAuthed && request.clientID && request.walletAddress) {
-      const clientID = request.clientID;
-      const address = request.walletAddress;
-
-      if (
-        typeof clientID === 'string' &&
-        !isEmpty(clientID) &&
-        typeof address === 'string' &&
-        !isEmpty(address)
-      ) {
-        const user = await controllers.user.getMe(clientID, address);
-        return response.status(200).json(user);
-      }
+    if (!request.slashauth.isAuthed) {
+      return response.sendStatus(401);
     }
+
+    const { clientID, userID } = request.slashauth;
+
+    if (
+      typeof clientID === 'string' &&
+      !isEmpty(clientID) &&
+      typeof userID === 'string' &&
+      !isEmpty(userID)
+    ) {
+      const user = await controllers.user.getMe(clientID, userID);
+
+      return response.status(200).json(user);
+    }
+
     return response.sendStatus(403);
   } catch (err) {
     return response.sendStatus(400);
@@ -27,28 +30,27 @@ export const getMe: Handler = async (request, response) => {
 
 export const patchMe: Handler = async (request, response) => {
   try {
-    if (request.isAuthed && request.clientID && request.walletAddress) {
-      const clientID = request.clientID;
-      const address = request.walletAddress;
-
-      const { nickname } = request.body;
-
-      if (
-        typeof clientID === 'string' &&
-        !isEmpty(clientID) &&
-        typeof address === 'string' &&
-        !isEmpty(address) &&
-        typeof nickname === 'string' &&
-        !isEmpty(nickname)
-      ) {
-        const user = await controllers.user.patchMe(
-          clientID,
-          address,
-          nickname
-        );
-        return response.status(200).json(user);
-      }
+    // Make sure the user is authed
+    if (!request.slashauth.isAuthed) {
+      return response.sendStatus(401);
     }
+
+    const { clientID, userID } = request.slashauth;
+
+    const { nickname } = request.body;
+
+    if (
+      typeof clientID === 'string' &&
+      !isEmpty(clientID) &&
+      typeof userID === 'string' &&
+      !isEmpty(userID) &&
+      typeof nickname === 'string' &&
+      !isEmpty(nickname)
+    ) {
+      const user = await controllers.user.patchMe(clientID, userID, nickname);
+      return response.status(200).json(user);
+    }
+
     return response.sendStatus(403);
   } catch (err) {
     return response.sendStatus(400);
@@ -58,20 +60,17 @@ export const patchMe: Handler = async (request, response) => {
 export const getUsers: Handler = async (request, response) => {
   try {
     // Make sure the user is authed
-    if (request.isAuthed && request.clientID && request.walletAddress) {
-      const clientID = request.clientID;
-      const address = request.walletAddress;
-      const cursor = request.query.cursor;
+    if (!request.slashauth.isAuthed) {
+      return response.sendStatus(401);
+    }
 
-      if (typeof clientID === 'string' && !isEmpty(clientID)) {
-        const users = await controllers.user.getUsers(
-          clientID,
-          address,
-          cursor as string
-        );
+    const clientID = request.slashauth.clientID;
+    const cursor = request.query.cursor;
 
-        return response.status(200).json(users);
-      }
+    if (typeof clientID === 'string' && !isEmpty(clientID)) {
+      const users = await controllers.user.getUsers(clientID, cursor as string);
+
+      return response.status(200).json(users);
     }
     return response.sendStatus(400);
   } catch (err) {
