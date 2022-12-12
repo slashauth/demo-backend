@@ -17,29 +17,29 @@ export class UserController {
    * @returns
    */
   getMe = async (clientID: string, userID: string): Promise<User> => {
-    try {
-      const userResp = await slashauthClient.user.getUserByID({
-        userID,
-      });
+    const [userResp, , getUserErr] = await slashauthClient.user.getUserByID({
+      userID,
+    });
 
-      if (!userResp.result || !userResp.result.data) {
-        throw new Error(
-          `getUserByID did not return a result for clientID ${clientID} and user ${userID}`
-        );
-      }
-
-      return {
-        clientID: userResp.result.data.clientID,
-        address: userResp.result.data.wallet,
-        nickname: userResp.result.data.nickname,
-        roles: userResp.result.data.roles,
-        metadata: userResp.result.data.metadata,
-        dateTime: userResp.result.data.createdAt,
-      };
-    } catch (err) {
-      console.error(err);
-      throw err;
+    if (getUserErr) {
+      console.error(getUserErr);
+      throw getUserErr;
     }
+
+    if (!userResp) {
+      throw new Error(
+        `getUserByID did not return a result for clientID ${clientID} and user ${userID}`
+      );
+    }
+
+    return {
+      clientID: userResp.clientID,
+      address: userResp.wallet,
+      nickname: userResp.nickname,
+      roles: userResp.roles,
+      metadata: userResp.metadata,
+      dateTime: userResp.createdAt,
+    };
   };
 
   /**
@@ -54,30 +54,30 @@ export class UserController {
     userID: string,
     nickname: string
   ): Promise<User> => {
-    try {
-      const updateResp = await slashauthClient.user.updateUserMetadata({
-        userID,
-        nickname,
-      });
+    const [updateResp, , updateUserErr] = await slashauthClient.user.updateUserMetadata({
+      userID,
+      nickname,
+    });
 
-      if (!updateResp.result || !updateResp.result.data) {
-        throw new Error(
-          `updateUserMetadata did not return a result for clientID ${clientID} and user ${userID}`
-        );
-      }
-
-      return {
-        clientID: updateResp.result.data.clientID,
-        address: updateResp.result.data.wallet,
-        nickname: updateResp.result.data.nickname,
-        roles: updateResp.result.data.roles,
-        metadata: updateResp.result.data.metadata,
-        dateTime: updateResp.result.data.createdAt,
-      };
-    } catch (err) {
-      console.error(err);
-      throw err;
+    if (updateUserErr) {
+      console.error(updateUserErr);
+      throw updateUserErr;
     }
+
+    if (!updateResp) {
+      throw new Error(
+        `updateUserMetadata did not return a result for clientID ${clientID} and user ${userID}`
+      );
+    }
+
+    return {
+      clientID: updateResp.clientID,
+      address: updateResp.wallet,
+      nickname: updateResp.nickname,
+      roles: updateResp.roles,
+      metadata: updateResp.metadata,
+      dateTime: updateResp.createdAt,
+    };
   };
 
   /**
@@ -88,38 +88,38 @@ export class UserController {
    * @returns
    */
   getUsers = async (clientID: string, cursor?: string): Promise<User[]> => {
-    try {
-      let hasMore = true;
-      const users: User[] = [];
+    let hasMore = true;
+    const allUsers: User[] = [];
 
-      while (hasMore) {
-        const usersResp = await slashauthClient.user.getUsers({ cursor });
+    while (hasMore) {
+      const [users, metadata, err] = await slashauthClient.user.getUsers({ cursor });
 
-        if (!usersResp.result || !usersResp.result.data) {
-          throw new Error(
-            `getUsers did not return a result for clientID ${clientID}`
-          );
-        }
-
-        usersResp.result.data.forEach((elem) => {
-          users.push({
-            clientID: elem.clientID,
-            address: elem.wallet,
-            nickname: elem.nickname,
-            roles: elem.roles,
-            metadata: elem.metadata,
-            dateTime: elem.createdAt,
-          });
-        });
-
-        hasMore = usersResp.result.hasMore;
-        cursor = usersResp.result.cursor;
+      if (err) {
+        console.error(err);
+        throw err;
       }
 
-      return users;
-    } catch (err) {
-      console.error(err);
-      throw err;
+      if (!users) {
+        throw new Error(
+          `getUsers did not return a result for clientID ${clientID}`
+        );
+      }
+
+      users.forEach((elem) => {
+        allUsers.push({
+          clientID: elem.clientID,
+          address: elem.wallet,
+          nickname: elem.nickname,
+          roles: elem.roles,
+          metadata: elem.metadata,
+          dateTime: elem.createdAt,
+        });
+      });
+
+      hasMore = metadata.hasMore;
+      cursor = metadata.cursor;
     }
+
+    return allUsers;
   };
 }
