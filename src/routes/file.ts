@@ -13,12 +13,12 @@ export const getPresignedURLForFile: Handler = async (request, response) => {
     const fileID = request.params.fileID;
 
     if (clientID && !isEmpty(clientID) && !isEmpty(fileID)) {
-      const resp = await controllers.file.getPresignedURLForFile(
+      const fileURL = await controllers.file.getPresignedURLForFile(
         clientID,
         fileID
       );
 
-      return response.status(200).json(resp);
+      return response.status(200).json({ data: { url: fileURL }});
     }
     return response.sendStatus(403);
   } catch (err) {
@@ -37,9 +37,9 @@ export const listFiles: Handler = async (request, response) => {
     const cursor = request.query.cursor;
 
     if (clientID && !isEmpty(clientID)) {
-      const resp = await controllers.file.listFiles(clientID, cursor as string);
+      const files = await controllers.file.listFiles(clientID, cursor as string);
 
-      return response.status(200).json(resp);
+      return response.status(200).json({ data: files });
     }
 
     return response.sendStatus(403);
@@ -71,14 +71,14 @@ export const createFile: Handler = async (request, response) => {
       rolesRequired &&
       file
     ) {
-      const resp = await controllers.file.createFile(clientID, userID, {
+      const fileRecord = await controllers.file.createFile(clientID, userID, {
         name,
         rolesRequired,
         description,
         file,
       });
 
-      return response.status(200).json(resp);
+      return response.status(200).json({ data: fileRecord });
     }
 
     return response.sendStatus(403);
@@ -101,13 +101,13 @@ export const updateFile: Handler = async (request, response) => {
     const { name, roles_required, description } = request.body;
 
     if (clientID && !isEmpty(clientID) && !isEmpty(fileID)) {
-      const resp = await controllers.file.updateFile(clientID, fileID, {
+      const file = await controllers.file.updateFile(clientID, fileID, {
         name,
         rolesRequired: roles_required,
         description,
       });
 
-      return response.status(200).json(resp);
+      return response.status(200).json({ data: file });
     }
 
     return response.sendStatus(403);
@@ -129,9 +129,9 @@ export const deleteFile: Handler = async (request, response) => {
     const fileID = request.params.fileID;
 
     if (clientID && !isEmpty(clientID) && !isEmpty(fileID)) {
-      const resp = await controllers.file.deleteFile(clientID, fileID);
+      const file = await controllers.file.deleteFile(clientID, fileID);
 
-      return response.status(200).json(resp);
+      return response.status(200).json({ data: file });
     }
 
     return response.sendStatus(403);

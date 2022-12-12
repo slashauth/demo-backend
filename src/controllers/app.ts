@@ -13,23 +13,23 @@ export class AppController {
    * @returns
    */
   getAppMetadataController = async (clientID: string): Promise<AppRecord> => {
-    try {
-      const appResp = await slashauthClient.app.getInfo();
+      const [data, , getDataErr] = await slashauthClient.app.getInfo();
+  
+      if (getDataErr) {
+        console.error(getDataErr);
+        throw getDataErr;
+      }
 
-      if (!appResp.result || !appResp.result.data) {
+      if (!data) {
         throw new Error(
           `getApp did not return a result for clientID ${clientID}`
         );
       }
 
       return {
-        clientID: appResp.result.data.clientID,
-        name: appResp.result.data.name,
-        description: appResp.result.data.description,
+        clientID: data.clientID,
+        name: data.name,
+        description: data.description,
       };
-    } catch (err) {
-      console.error(err);
-      throw err;
-    }
   };
 }
