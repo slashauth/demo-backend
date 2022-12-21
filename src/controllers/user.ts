@@ -17,9 +17,10 @@ export class UserController {
    * @returns
    */
   getMe = async (clientID: string, userID: string): Promise<User> => {
-    const [userResp, , getUserErr] = await slashauthClient.user.getUserByID({
-      userID,
-    });
+    const { data: userResp, error: getUserErr } =
+      await slashauthClient.user.getUserByID({
+        userID,
+      });
 
     if (getUserErr) {
       console.error(getUserErr);
@@ -33,12 +34,12 @@ export class UserController {
     }
 
     return {
-      clientID: userResp.data.clientID,
-      address: userResp.data.wallet,
-      nickname: userResp.data.nickname,
-      roles: userResp.data.roles,
-      metadata: userResp.data.metadata,
-      dateTime: userResp.data.createdAt,
+      clientID: userResp.clientID,
+      address: userResp.wallet,
+      nickname: userResp.nickname,
+      roles: userResp.roles,
+      metadata: userResp.metadata,
+      dateTime: userResp.createdAt,
     };
   };
 
@@ -54,10 +55,11 @@ export class UserController {
     userID: string,
     nickname: string
   ): Promise<User> => {
-    const [updateResp, , updateUserErr] = await slashauthClient.user.updateUserMetadata({
-      userID,
-      nickname,
-    });
+    const { data: updateResp, error: updateUserErr } =
+      await slashauthClient.user.updateUserMetadata({
+        userID,
+        nickname,
+      });
 
     if (updateUserErr) {
       console.error(updateUserErr);
@@ -71,12 +73,12 @@ export class UserController {
     }
 
     return {
-      clientID: updateResp.data.clientID,
-      address: updateResp.data.wallet,
-      nickname: updateResp.data.nickname,
-      roles: updateResp.data.roles,
-      metadata: updateResp.data.metadata,
-      dateTime: updateResp.data.createdAt,
+      clientID: updateResp.clientID,
+      address: updateResp.wallet,
+      nickname: updateResp.nickname,
+      roles: updateResp.roles,
+      metadata: updateResp.metadata,
+      dateTime: updateResp.createdAt,
     };
   };
 
@@ -92,20 +94,23 @@ export class UserController {
     const allUsers: User[] = [];
 
     while (hasMore) {
-      const [users, metadata, err] = await slashauthClient.user.getUsers({ cursor });
+      const { paginatedResponse: users, error } =
+        await slashauthClient.user.getUsers({
+          cursor,
+        });
 
-      if (err) {
-        console.error(err);
-        throw err;
+      if (error) {
+        console.error(error);
+        throw error;
       }
 
-      if (!users) {
+      if (!users?.data) {
         throw new Error(
           `getUsers did not return a result for clientID ${clientID}`
         );
       }
 
-      users.forEach((elem) => {
+      users.data.forEach((elem) => {
         allUsers.push({
           clientID: elem.clientID,
           address: elem.wallet,
@@ -116,8 +121,8 @@ export class UserController {
         });
       });
 
-      hasMore = metadata.hasMore;
-      cursor = metadata.cursor;
+      hasMore = users.pageInfo.hasMore;
+      cursor = users.pageInfo.cursor;
     }
 
     return allUsers;

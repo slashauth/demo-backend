@@ -1,11 +1,4 @@
-import { controllers } from '.';
-import { CONSTANTS } from '../utils/constants';
-import {
-  CRUDFileResponse,
-  PresignedURLForFile,
-  ListFilesResponse,
-  FileRecord,
-} from '@slashauth/types';
+import { PresignedURLForFile, FileRecord } from '@slashauth/types';
 import { slashauthClient } from '../third-party/slashauth_client';
 
 type CreateFileInput = {
@@ -26,9 +19,10 @@ export class FileController {
     clientID: string,
     fileID: string
   ): Promise<PresignedURLForFile> => {
-    const [fileURL, , getUrlErr] = await slashauthClient.file.getPresignedURL({
-      id: fileID,
-    });
+    const { data: fileURL, error: getUrlErr } =
+      await slashauthClient.file.getPresignedURL({
+        id: fileID,
+      });
 
     if (getUrlErr) {
       console.error(getUrlErr);
@@ -48,20 +42,23 @@ export class FileController {
     clientID: string,
     cursor?: string
   ): Promise<FileRecord[]> => {
-    const [files, , listFilesErr] = await slashauthClient.file.listFiles({ cursor });
+    const { paginatedResponse: files, error: listFilesErr } =
+      await slashauthClient.file.listFiles({
+        cursor,
+      });
 
     if (listFilesErr) {
       console.error(listFilesErr);
       throw listFilesErr;
     }
 
-    if (!files) {
+    if (!files?.data) {
       throw new Error(
         `listFiles did not return a result for clientID ${clientID}`
       );
     }
 
-    return files;
+    return files.data;
   };
 
   // admin-gated
@@ -70,14 +67,15 @@ export class FileController {
     userID: string,
     input: CreateFileInput
   ): Promise<FileRecord> => {
-    const [file, , addFileErr] = await slashauthClient.file.addFile({
-      file: input.file.buffer,
-      mimeType: input.file.mimetype,
-      userID,
-      name: input.name,
-      rolesRequired: input.rolesRequired,
-      description: input.description,
-    });
+    const { data: file, error: addFileErr } =
+      await slashauthClient.file.addFile({
+        file: input.file.buffer,
+        mimeType: input.file.mimetype,
+        userID,
+        name: input.name,
+        rolesRequired: input.rolesRequired,
+        description: input.description,
+      });
 
     if (addFileErr) {
       console.error(addFileErr);
@@ -98,12 +96,13 @@ export class FileController {
     fileID: string,
     input: UpdateFileInput
   ): Promise<FileRecord> => {
-    const [file, , updateFileErr] = await slashauthClient.file.updateFile({
-      id: fileID,
-      name: input.name,
-      description: input.description,
-      rolesRequired: input.rolesRequired,
-    });
+    const { data: file, error: updateFileErr } =
+      await slashauthClient.file.updateFile({
+        id: fileID,
+        name: input.name,
+        description: input.description,
+        rolesRequired: input.rolesRequired,
+      });
 
     if (updateFileErr) {
       console.error(updateFileErr);
@@ -123,9 +122,10 @@ export class FileController {
     clientID: string,
     fileID: string
   ): Promise<FileRecord> => {
-    const [file, , deleteFileErr] = await slashauthClient.file.deleteFile({
-      id: fileID,
-    });
+    const { data: file, error: deleteFileErr } =
+      await slashauthClient.file.deleteFile({
+        id: fileID,
+      });
 
     if (deleteFileErr) {
       console.error(deleteFileErr);

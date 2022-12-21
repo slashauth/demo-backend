@@ -10,13 +10,14 @@ type Event = {
 
 export class EventController {
   getEventsController = async (clientID: string): Promise<Event[]> => {
-    const [data, , getRoleErr] = await slashauthClient.app.getRoleRestrictedData({
-      role: CONSTANTS.MEMBER_ROLE_LEVEL,
-    });
+    const { data, error: getRoleErr } =
+      await slashauthClient.app.getRoleRestrictedData({
+        role: CONSTANTS.MEMBER_ROLE_LEVEL,
+      });
 
     if (getRoleErr) {
       console.error(getRoleErr);
-      throw getRoleErr; 
+      throw getRoleErr;
     }
 
     if (!data) {
@@ -35,9 +36,10 @@ export class EventController {
     input: Event
   ): Promise<Event> => {
     // Fetch roleMetadata
-    const [data, , getRoleErr] = await slashauthClient.app.getRoleRestrictedData({
-      role: CONSTANTS.MEMBER_ROLE_LEVEL,
-    });
+    const { data, error: getRoleErr } =
+      await slashauthClient.app.getRoleRestrictedData({
+        role: CONSTANTS.MEMBER_ROLE_LEVEL,
+      });
 
     if (getRoleErr) {
       console.error(getRoleErr);
